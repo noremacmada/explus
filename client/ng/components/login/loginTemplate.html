@@ -1,0 +1,66 @@
+<div id="login" class="container">
+  <responsive-input
+    ng-show="$ctrl.isCreateUser"
+    type="'text'"
+    name="'email'"
+    glyphicon="'glyphicon-envelope'"
+    placeholder="'Please enter an email'"
+    value="$ctrl.email.value"
+    validation="$ctrl.email.validation"
+    message="$ctrl.email.message"
+    validate="$ctrl.email.validate()"
+  ></responsive-input>
+<!--     validator="$ctrl.email.validator($ctrl.email.value)"-->
+  <responsive-input
+    type="'username'"
+    name="'username'"
+    glyphicon="'glyphicon-user'"
+    placeholder="'Please enter a username'"
+    value="$ctrl.username.value"
+    validation="$ctrl.username.validation"
+    message="$ctrl.username.message"
+  ></responsive-input>
+  <responsive-input
+    type="'password'"
+    name="'password'"
+    glyphicon="'glyphicon-lock'"
+    placeholder="'Please enter a password'"
+    value="$ctrl.password.value"
+    validation="$ctrl.password.validation"
+    message="$ctrl.password.message"
+  ></responsive-input>
+  <responsive-input
+    ng-show="$ctrl.isCreateUser"
+    type="'password'"
+    name="'passwordConfirm'"
+    glyphicon="'glyphicon-lock'"
+    placeholder="'Please confirm password'"
+    value="$ctrl.passwordConfirm.value"
+    validation="$ctrl.passwordConfirm.validation"
+    message="$ctrl.passwordConfirm.message"
+    validate="$ctrl.passwordConfirm.validate()"
+  ></responsive-input>
+  <div class="form-group">
+    <a ng-show="!$ctrl.isCreateUser" ng-click="$ctrl.toggleCreateUser()">Create new user</a>
+    <a ng-show="$ctrl.isCreateUser" ng-click="$ctrl.toggleCreateUser()">Login with existing user</a>
+  </div>
+  <div class="form-group">
+    <button
+      ng-show="!$ctrl.isCreateUser"
+      type="submit"
+      class="btn btn-default"
+      ng-click="$ctrl.login()"
+    >Login</button>
+    <button
+      ng-show="$ctrl.isCreateUser"
+      type="submit"
+      class="btn btn-default"
+      ng-click="$ctrl.create()"
+    >Create</button>
+	</div>
+  <div class="form-group">
+    <div ng-show="$ctrl.errorMessage != ''" class="alert alert-danger">
+      {{$ctrl.errorMessage}}
+    </div>
+  </div>
+</div>

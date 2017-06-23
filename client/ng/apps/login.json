@@ -1,0 +1,4 @@
+{
+  "services":["validationService"],
+  "components":["login","responsiveInput"]
+}

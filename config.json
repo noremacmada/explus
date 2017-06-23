@@ -1,0 +1,5 @@
+{
+  "relPathNg":"/client/ng",
+  "relPathHandlers":"/server/handlers",
+  "cacheNg": false
+}

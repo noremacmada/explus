@@ -1,0 +1,22 @@
+<div class="input-group has-feedback {{$ctrl.feedback}}">
+  <span class="input-group-addon">
+    <i ng-show="$ctrl.glyphicon != ''" class="glyphicon {{$ctrl.glyphicon}}"></i>
+    <label ng-show="{{$ctrl.label != ''}}">{{$ctrl.label}}</label>
+  </span>
+  <input
+    class="form-control"
+    type="{{$ctrl.type}}"
+    name="{{$ctrl.name}}"
+    placeholder="{{$ctrl.placeholder}}"
+    ng-model="$ctrl.value"
+    ng-blur="$ctrl.validate()"
+  />
+  <!--    ng-change="'$ctrl.validator($ctrl.value)'" -->
+  <span class="form-control-feedback glyphicon {{$ctrl.feedbackIcon}}"></span>
+</div>
+<div
+  ng-show="$ctrl.message != ''"
+  class="alert {{$ctrl.alert}}"
+>
+  {{$ctrl.message}}
+</div>
