@@ -3,23 +3,41 @@ const newLine = require("os").EOL
 const cache = {}
 const Base = require('./base/base.js').Base
 
+class Static extends Base{
+  constructor(req, res){
+    super(req, res)
+    let filePath = `${getPublicDir(req)}\\${req.args.relPathFile}`
+    res.sendFile(filePath)
+  }
+}
+
 module.exports = {
   Include : class Include extends Base {
     static get method(){return "get"}
     static get roles(){return "all"}
     static get route(){return "default"}
+    static get secure(){return false}
     constructor(req, res){
+      super(req, res)
       let prmsGetResponseBody = getPrmsGetResponseBody(req, res)
       prmsGetResponseBody.then(responseBody =>
         res.send(responseBody)
       )
+      .catch(err =>
+        res.status(500).send(err.stack)
+      )
     }
   },
-  Ola : class Ola extends Base {
-    constructor(req, res){
-      res.send()
-    }
+  Insecure : class Insecure extends Static {
+    static get route(){return "/insecure/:relPathFile"}
+    static get secure(){return false}
+    constructor(req, res){super(req,res)}
+  },
+  Secure : class Secure extends Static {
+    static get route(){return "/public/:relPathFile"}
+    constructor(req, res){super(req,res)}
   }
+
 }
 
 let appDir = ""
@@ -32,6 +50,15 @@ function getAppDir() {
   }
   return appDir
 }
+let publicDir =""
+function getPublicDir(req){
+  if(publicDir == ""){
+    publicDir = getAppDir()
+      + req.config.relPathClient
+      + "/public"
+  }
+  return publicDir
+}
 
 function getPrmsLoadFile(filePath){
   return new Promise(
@@ -40,26 +67,34 @@ function getPrmsLoadFile(filePath){
         filePath,
         "utf-8",
         (err, data) => {
-          if (err){ throw err}
-          let json = JSON.parse(data)
-          resolve(json)
+          if (err){
+            reject(err)
+          }
+          else{
+            let json = JSON.parse(data)
+            resolve(json)
+          }
         }
       )
     }
   )
 }
 
-function getPrmsLoadService(appDir, serviceName, arrServices){
+function getPrmsLoadService(ngPath, serviceName, arrServices){
   return new Promise(
     (resolve, reject) => {
-      let filePathService = `${appDir}/client/ngapp/services/${serviceName}.js`
+      let filePathService = `${ngPath}/services/${serviceName}.js`
       fs.readFile(
         filePathService,
         "utf-8",
         (err, data) => {
-          if (err){ throw err}
-          arrServices.push(data)
-          resolve()
+          if (err){
+            reject(err)
+          }
+          else{
+            arrServices.push(data)
+            resolve()
+          }
         }
       )
     }
@@ -74,9 +109,13 @@ function getPrmsLoadComponentBindings(dirPathComponent, objComponent){
         filePathComponentBindings,
         "utf-8",
         (err, data) => {
-          if (err){ throw err}
-          objComponent.bindings = data
-          resolve()
+          if (err){
+            reject(err)
+          }
+          else{
+            objComponent.bindings = data
+            resolve()
+          }
         }
       )
     }
@@ -91,9 +130,13 @@ function getPrmsLoadComponentController(dirPathComponent, objComponent){
         filePathComponentController,
         "utf-8",
         (err, data) => {
-          if (err){ throw err}
-          objComponent.controller = data
-          resolve()
+          if (err){
+            reject(err)
+          }
+          else {
+            objComponent.controller = data
+            resolve()
+          }
         }
       )
     }
@@ -108,7 +151,9 @@ function getPrmsLoadComponentTemplate(dirPathComponent, objComponent){
         filePathComponentTemplate,
         "utf-8",
         (err, data) => {
-          if (err){ throw err}
+          if (err){
+            reject(err)
+          }
           let template = data.split(newLine).join(" ")
           objComponent.template = template
           resolve()
@@ -178,20 +223,20 @@ function getStrApp(moduleName, params, obj){
 function getPrmsGetResponseBody(req){
   return new Promise(
     (resolve, reject) => {
-      if(req.config.cacheNg && cache[req.params.app]){
-        resolve(cache[req.params.app])
+      if(req.config.cacheNg && cache[req.args.app]){
+        resolve(cache[req.args.app])
       }
       else {
         let appDir = getAppDir()
-        let ngPath = `${appDir}/${req.config.relPathNg}`
-        let filePath =  `${ngPath}/apps/${req.params.app}.json`
+        let ngPath = `${appDir}${req.config.relPathNg}`
+        let filePath =  `${ngPath}/apps/${req.args.app}.json`
         let prmsLoadFile = getPrmsLoadFile(filePath)
         let prmsLoadModules = prmsLoadFile.then(
           appJson => {
             let services = appJson.services
             let arrServices = new Array()
             let prmsLoadServices = services.map(serviceName => {
-                return getPrmsLoadService(appDir, serviceName, arrServices)
+                return getPrmsLoadService(ngPath, serviceName, arrServices)
               }
             )
 
@@ -213,23 +258,25 @@ function getPrmsGetResponseBody(req){
                 //.catch(err =>
                   //this.responseWrapper.error(500, "Error loading modules")
                 //)
+//                .catch(err =>
+//                  console.log("Error loading module")
+//                )
               }
             )
           }
         )
+        .catch(err => reject(err))
         prmsLoadModules.then(
           obj => {
-            let moduleName = `${req.params.app}Module`
-            let strApp = getStrApp(moduleName, params, obj)
+            let moduleName = `${req.args.app}Module`
+            let strApp = getStrApp(moduleName, req.args, obj)
             if(req.config.cacheNg){
-              cache[req.params.app] = strApp
+              cache[req.args.app] = strApp
             }
             resolve(strApp)
           }
         )
-        //.catch(err =>
-          //this.responseWrapper.error(500, "Error building app"))
-        //}
+        .catch(err => reject(err))
       }
     }
   )

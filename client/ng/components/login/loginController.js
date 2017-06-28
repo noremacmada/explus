@@ -63,7 +63,7 @@ LoginController.prototype.login = function(){
   }
   if(isValid){
     this.services.$http.post(
-      '/login/login',
+      '/user/login',
       {
         username: this.username.value,
         password: this.password.value
@@ -98,7 +98,7 @@ LoginController.prototype.create = function(){
   }
   if(isValid){
     this.services.$http.post(
-      '/login/create',
+      '/user/create',
       {
         email: this.email.value,
         username: this.username.value,
@@ -147,6 +147,9 @@ LoginController.prototype.handleError = function(response){
     }
   }
   else{
-    this.errorMessage = response.data != '' ? response.data : response.statusText;
+    this.errorMessage = response.data == "" ? response.statusText
+      : angular.element(response.data).text() != "" ? angular.element(response.data).text()
+      : response.data
+    ;
   }
 }
